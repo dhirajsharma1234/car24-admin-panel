@@ -1,0 +1,24 @@
+/* Add any custom admin-specific styles here */
+body {
+    background-color: #f3f4f6;
+  }
+  
+  /* Add smooth transitions for sidebar links */
+  nav a {
+    transition: background-color 0.2s ease;
+  }
+  
+  /* Style for tables */
+  table {
+    width: 100%;
+  }
+  
+  th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  th {
+    background-color: #f9fafb;
+  }
