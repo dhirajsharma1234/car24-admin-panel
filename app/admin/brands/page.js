@@ -14,7 +14,7 @@ const fetchBrands = async ({ queryKey }) => {
     const [_key, page, limit] = queryKey;
     const token = localStorage.getItem("token");
     const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/brand/all?page=${page}&limit=${limit}`,
+        `http://localhost:5000/api/brand/all?page=${page}&limit=${limit}`,
         {
             headers: { Authorization: `Bearer ${token}` },
         }
@@ -24,23 +24,19 @@ const fetchBrands = async ({ queryKey }) => {
 
 const deleteBrand = async (id) => {
     const token = localStorage.getItem("token");
-    await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/brand/${id}`, {
+    await axios.delete(`http://localhost:5000/api/brand/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
     });
 };
 
 const createBrand = async (formData) => {
     const token = localStorage.getItem("token");
-    await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/brand/create`,
-        formData,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data",
-            },
-        }
-    );
+    await axios.post(`http://localhost:5000/api/brand/create`, formData, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+        },
+    });
 };
 
 export default function BrandListPage() {

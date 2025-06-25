@@ -37,9 +37,7 @@ export default function EditCarPage() {
 
     const fetchBrands = async () => {
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/brand/all`
-            );
+            const res = await fetch(`http://localhost:5000/api/brand/all`);
             const json = await res.json();
             setBrands(json.data || []);
         } catch {
@@ -52,10 +50,10 @@ export default function EditCarPage() {
             const token = localStorage.getItem("token");
 
             const [userRes, carRes] = await Promise.all([
-                fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+                fetch(`http://localhost:5000/api/user/me`, {
                     headers: { Authorization: `Bearer ${token}` },
                 }),
-                fetch(`${process.env.NEXT_PUBLIC_API_URL}/car/${id}`, {
+                fetch(`http://localhost:5000/api/car/${id}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 }),
             ]);
@@ -108,14 +106,11 @@ export default function EditCarPage() {
         newImages.forEach((file) => formData.append("images", file));
 
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/car/${id}`,
-                {
-                    method: "PATCH",
-                    headers: { Authorization: `Bearer ${token}` },
-                    body: formData,
-                }
-            );
+            const res = await fetch(`http://localhost:5000/api/car/${id}`, {
+                method: "PATCH",
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData,
+            });
 
             const json = await res.json();
 

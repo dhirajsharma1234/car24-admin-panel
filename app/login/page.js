@@ -16,7 +16,7 @@ export default function LoginPage() {
     const loginMutation = useMutation({
         mutationFn: async ({ email, password }) => {
             const res = await axios.post(
-                `${process.env.NEXT_PUBLIC_API_URL}/user/login`,
+                `http://localhost:5000/api/user/login`,
                 {
                     email,
                     password,

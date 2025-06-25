@@ -19,7 +19,7 @@ import { Loader } from "@/components/loader";
 
 const fetchSellRequests = async (page, limit, token) => {
     const { data } = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/sell/car?page=${page}&limit=${limit}`,
+        `http://localhost:5000/api/sell/car?page=${page}&limit=${limit}`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -31,7 +31,7 @@ const fetchSellRequests = async (page, limit, token) => {
 
 const updateSellRequestStatus = async ({ id, status, token }) => {
     await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/sell/car/${id}/status`,
+        `http://localhost:5000/api/sell/car/${id}/status`,
         { status },
         {
             headers: {
