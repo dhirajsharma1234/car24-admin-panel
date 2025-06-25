@@ -1,128 +1,377 @@
-'use client'
+/** @format */
 
-import { useEffect, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
-import { Plus } from 'lucide-react'
+"use client";
 
-const FUEL_TYPES = ['Petrol', 'Diesel', 'Electric', 'Hybrid', 'CNG']
-const TRANSMISSIONS = ['Automatic', 'Manual']
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import toast from "react-hot-toast";
+import { Loader } from "@/components/loader";
+
+const FUEL_TYPES = ["petrol", "diesel", "electric", "hybrid", "cng"];
+const TRANSMISSIONS = ["Automatic", "Manual"];
+const CONDITIONS = ["new", "used"];
 
 export default function EditCarPage() {
-  const router = useRouter()
-  const { id } = useParams()
-  const [form, setForm] = useState(null)
-  const [loading, setLoading] = useState(true)
+    const router = useRouter();
+    const { id } = useParams();
+    const [brands, setBrands] = useState([]);
+    const [form, setForm] = useState({
+        brand: "",
+        modelName: "",
+        year: "",
+        price: "",
+        mileage: "",
+        fuelType: "",
+        transmission: "",
+        color: "",
+        description: "",
+        condition: "",
+        isApproved: true,
+        isFeatured: false,
+        isSold: false,
+        images: [],
+        addedBy: "",
+    });
+    const [loading, setLoading] = useState(true);
+    const [newImages, setNewImages] = useState([]);
 
-  console.log('Editing car with ID:', id);
-  
-  useEffect(() => {
-    // Fetch car details
-    const fetchCar = async () => {
-      try {
-        const res = await fetch(`/api/cars/${id}`)
-        const data = await res.json()
-        setForm(data)
-      } catch (err) {
-        console.error('Failed to fetch car:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchCar()
-  }, [id])
+    const fetchBrands = async () => {
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/brand/all`
+            );
+            const json = await res.json();
+            setBrands(json.data || []);
+        } catch {
+            toast.error("Failed to load brands");
+        }
+    };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
-  }
+    const fetchUserAndCar = async () => {
+        try {
+            const token = localStorage.getItem("token");
 
-  const handleImageChange = (index, value) => {
-    const updated = [...form.images]
-    updated[index] = value
-    setForm((prev) => ({ ...prev, images: updated }))
-  }
+            const [userRes, carRes] = await Promise.all([
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                }),
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/car/${id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                }),
+            ]);
 
-  const addImageField = () => {
-    setForm((prev) => ({ ...prev, images: [...prev.images, ''] }))
-  }
+            const userJson = await userRes.json();
+            const carJson = await carRes.json();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    try {
-      const res = await fetch(`/api/cars/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      })
-      if (res.ok) {
-        router.push('/admin/cars')
-      } else {
-        alert('Update failed')
-      }
-    } catch (err) {
-      console.error('Error updating car:', err)
-    }
-  }
+            if (userJson?.data && carJson?.data) {
+                setForm({
+                    ...carJson.data,
+                    brand: carJson.data.brand?._id || "",
+                    addedBy: userJson.data._id,
+                });
+            } else {
+                toast.error("Failed to fetch user or car info");
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Something went wrong while fetching");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  if (loading || !form) return <div className="p-10 text-gray-600">Loading...</div>
+    useEffect(() => {
+        fetchBrands();
+        fetchUserAndCar();
+    }, [id]);
 
-  return (
-    <div className="min-h-screen bg-gray-100 py-10 px-4 md:px-10">
-      <div className="max-w-5xl mx-auto bg-white shadow-md rounded-2xl p-8 md:p-10">
-        <h1 className="text-3xl font-semibold text-gray-800 mb-2">✏️ Edit Car</h1>
-        <form onSubmit={handleSubmit} className="space-y-10">
-          {/* Fields same as add page */}
-          <div className="grid md:grid-cols-3 gap-4">
-            <input name="brand" value={form.brand} onChange={handleChange} className="input" required />
-            <input name="model" value={form.model} onChange={handleChange} className="input" required />
-            <input name="year" type="number" value={form.year} onChange={handleChange} className="input" required />
-          </div>
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        const finalValue = type === "checkbox" ? checked : value;
+        setForm((prev) => ({ ...prev, [name]: finalValue }));
+    };
 
-          <div className="grid md:grid-cols-3 gap-4">
-            <input name="price" type="number" value={form.price} onChange={handleChange} className="input" required />
-            <input name="mileage" type="number" value={form.mileage} onChange={handleChange} className="input" />
-            <input name="color" value={form.color} onChange={handleChange} className="input" />
-          </div>
+    const handleImageUpload = (e) => {
+        setNewImages(Array.from(e.target.files));
+    };
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <select name="fuelType" value={form.fuelType} onChange={handleChange} className="input" required>
-              <option value="">Select Fuel</option>
-              {FUEL_TYPES.map(f => <option key={f}>{f}</option>)}
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem("token");
+
+        const formData = new FormData();
+        Object.entries(form).forEach(([key, value]) => {
+            if (key === "images") return;
+            formData.append(key, value);
+        });
+
+        newImages.forEach((file) => formData.append("images", file));
+
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/car/${id}`,
+                {
+                    method: "PATCH",
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: formData,
+                }
+            );
+
+            const json = await res.json();
+
+            console.log(form);
+
+            if (res.ok) {
+                toast.success("✅ Car updated!");
+                router.push("/admin/cars");
+            } else {
+                toast.error(json?.message || "❌ Update failed");
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("❌ Server error");
+        }
+    };
+
+    if (loading) return <Loader />;
+
+    return (
+        <div className="min-h-screen bg-gray-100 py-10 px-4 md:px-10">
+            <div className="max-w-5xl mx-auto bg-white shadow-md rounded-2xl p-8 md:p-10">
+                <h1 className="text-3xl font-semibold text-gray-800 mb-2">
+                    ✏️ Edit Car
+                </h1>
+
+                <form onSubmit={handleSubmit} className="space-y-10">
+                    <div className="grid md:grid-cols-3 gap-4">
+                        <div>
+                            <label className="text-sm text-gray-600">
+                                Brand
+                            </label>
+                            <select
+                                name="brand"
+                                value={form.brand}
+                                onChange={handleChange}
+                                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"
+                            >
+                                <option value="">Select Brand</option>
+                                {brands.map((b) => (
+                                    <option key={b._id} value={b._id}>
+                                        {b.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <Input
+                            name="modelName"
+                            label="Model Name"
+                            value={form.modelName}
+                            onChange={handleChange}
+                            required
+                        />
+                        <Input
+                            name="year"
+                            type="number"
+                            label="Year"
+                            value={form.year}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-4">
+                        <Input
+                            name="price"
+                            type="number"
+                            label="Price (₹)"
+                            value={form.price}
+                            onChange={handleChange}
+                            required
+                        />
+                        <Input
+                            name="mileage"
+                            type="number"
+                            label="Mileage"
+                            value={form.mileage}
+                            onChange={handleChange}
+                        />
+                        <Input
+                            name="color"
+                            label="Color"
+                            value={form.color}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <Select
+                            name="fuelType"
+                            label="Fuel Type"
+                            value={form.fuelType}
+                            options={FUEL_TYPES}
+                            onChange={handleChange}
+                            required
+                        />
+                        <Select
+                            name="transmission"
+                            label="Transmission"
+                            value={form.transmission}
+                            options={TRANSMISSIONS}
+                            onChange={handleChange}
+                            required
+                        />
+                        <Select
+                            name="condition"
+                            label="Condition"
+                            value={form.condition}
+                            options={CONDITIONS}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div className="flex flex-wrap gap-4">
+                        <Checkbox
+                            name="isApproved"
+                            label="Approved"
+                            checked={form.isApproved}
+                            onChange={handleChange}
+                        />
+                        <Checkbox
+                            name="isFeatured"
+                            label="Featured"
+                            checked={form.isFeatured}
+                            onChange={handleChange}
+                        />
+                        <Checkbox
+                            name="isSold"
+                            label="Sold"
+                            checked={form.isSold}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="text-sm text-gray-600 block mb-1">
+                            Description
+                        </label>
+                        <textarea
+                            name="description"
+                            rows={4}
+                            value={form.description}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        />
+                    </div>
+
+                    {/* Existing Images */}
+                    <div className="space-y-2">
+                        <p className="text-sm text-gray-600">Existing Images</p>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {form.images?.map((img, i) => (
+                                <img
+                                    key={i}
+                                    src={`http://localhost:5000/uploads/cars/${img}`}
+                                    alt={`car-${i}`}
+                                    className="h-28 object-cover rounded"
+                                />
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Upload New Images */}
+                    <div>
+                        <label className="text-sm text-gray-600">
+                            Upload New Images
+                        </label>
+                        <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="block mt-2"
+                        />
+                        {newImages.length > 0 && (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                                {newImages.map((img, i) => (
+                                    <img
+                                        key={i}
+                                        src={URL.createObjectURL(img)}
+                                        className="h-28 object-cover rounded"
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg text-lg hover:bg-blue-700 transition"
+                    >
+                        ✅ Save Changes
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+// Components
+function Input({
+    name,
+    label,
+    type = "text",
+    value,
+    onChange,
+    required = false,
+}) {
+    return (
+        <div>
+            <label className="text-sm text-gray-600">{label}</label>
+            <input
+                name={name}
+                type={type}
+                value={value}
+                onChange={onChange}
+                required={required}
+                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"
+            />
+        </div>
+    );
+}
+
+function Select({ name, label, value, options, onChange, required = false }) {
+    return (
+        <div>
+            <label className="text-sm text-gray-600">{label}</label>
+            <select
+                name={name}
+                value={value}
+                onChange={onChange}
+                required={required}
+                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"
+            >
+                <option value="">Select</option>
+                {options.map((opt) => (
+                    <option key={opt} value={opt}>
+                        {opt}
+                    </option>
+                ))}
             </select>
-            <select name="transmission" value={form.transmission} onChange={handleChange} className="input" required>
-              <option value="">Select Transmission</option>
-              {TRANSMISSIONS.map(t => <option key={t}>{t}</option>)}
-            </select>
-          </div>
+        </div>
+    );
+}
 
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg"
-            rows={4}
-          />
-
-          <div className="space-y-2">
-            {form.images.map((img, index) => (
-              <input
-                key={index}
-                value={img}
-                onChange={(e) => handleImageChange(index, e.target.value)}
-                className="input"
-                placeholder="Image URL"
-              />
-            ))}
-            <button type="button" onClick={addImageField} className="text-sm text-blue-600 hover:underline flex items-center gap-1">
-              <Plus size={14} /> Add Image
-            </button>
-          </div>
-
-          <button type="submit" className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg text-lg hover:bg-blue-700 transition">
-            ✅ Save Changes
-          </button>
-        </form>
-      </div>
-    </div>
-  )
+function Checkbox({ name, label, checked, onChange }) {
+    return (
+        <label className="flex items-center gap-2 text-sm text-gray-600">
+            <input
+                type="checkbox"
+                name={name}
+                checked={checked}
+                onChange={onChange}
+                className="w-4 h-4"
+            />
+            {label}
+        </label>
+    );
 }

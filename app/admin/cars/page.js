@@ -1,61 +1,77 @@
 /** @format */
-
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
-import { Download, Plus, Star, Edit, Trash2 } from "lucide-react";
+import axios from "axios";
+import {
+    Download,
+    Plus,
+    Edit,
+    Trash2,
+    ChevronLeft,
+    ChevronRight,
+} from "lucide-react";
+import { Loader } from "@/components/loader";
+import useAuthRedirect from "@/hooks/useAuthRedirect";
+import toast from "react-hot-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-const cars = [
-    {
-        _id: "abc123",
-        brand: { _id: "b1", name: "Maruti" },
-        model: "Swift",
-        year: 2022,
-        price: 450000,
-        mileage: 15000,
-        fuelType: "Petrol",
-        transmission: "Manual",
-        color: "Red",
-        description: "Popular compact car",
-        images: [
-            "https://cdn.pixabay.com/photo/2023/07/19/12/16/car-8136751_1280.jpg",
-            "https://cdn.pixabay.com/photo/2023/07/19/12/16/car-8136751_1280.jpg",
-        ],
-        isApproved: true,
-        isFeatured: true,
-        isSold: false,
-        createdAt: "2024-12-05T09:10:00Z",
-    },
-    {
-        _id: "abc456",
-        brand: { _id: "b2", name: "Hyundai" },
-        model: "Creta",
-        year: 2023,
-        price: 980000,
-        mileage: 8000,
-        fuelType: "Diesel",
-        transmission: "Automatic",
-        color: "White",
-        description: "Premium SUV",
-        images: [
-            "https://cdn.pixabay.com/photo/2023/07/19/12/16/car-8136751_1280.jpg",
-        ],
-        isApproved: false,
-        isFeatured: false,
-        isSold: false,
-        createdAt: "2024-11-11T11:00:00Z",
-    },
-];
+const fetchCars = async ({ queryKey }) => {
+    const [_key, page, limit, search] = queryKey;
+    const token = localStorage.getItem("token");
+    const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/car/all?page=${page}&limit=${limit}&search=${search}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+    return res.data;
+};
+
+const deleteCar = async (id) => {
+    const token = localStorage.getItem("token");
+    await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/car/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+};
 
 export default function CarListPage() {
-    const [search, setSearch] = useState("");
+    useAuthRedirect();
 
-    const filtered = cars.filter(
-        (c) =>
-            c.model.toLowerCase().includes(search.toLowerCase()) ||
-            c.brand.name.toLowerCase().includes(search.toLowerCase())
-    );
+    const queryClient = useQueryClient();
+    const [search, setSearch] = useState("");
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(5);
+
+    const { data, isLoading } = useQuery({
+        queryKey: ["cars", page, limit, search],
+        queryFn: fetchCars,
+        keepPreviousData: true,
+    });
+
+    const mutation = useMutation({
+        mutationFn: deleteCar,
+        onSuccess: () => {
+            toast.success("Car deleted successfully");
+            queryClient.invalidateQueries({ queryKey: ["cars"] });
+        },
+        onError: () => {
+            toast.error("Failed to delete car");
+        },
+    });
+
+    const cars = data?.cars || [];
+    const pagination = data?.pagination || {
+        total: 0,
+        page: 1,
+        pages: 1,
+        limit: 10,
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">
@@ -66,14 +82,31 @@ export default function CarListPage() {
                     </h1>
                     <p className="text-gray-500">Manage your car listings</p>
                 </div>
-                <div className="flex gap-3 w-full md:w-auto">
+                <div className="flex flex-wrap gap-3 w-full md:w-auto">
                     <input
                         type="text"
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search by brand or model"
+                        onChange={(e) => {
+                            setPage(1);
+                            setSearch(e.target.value);
+                        }}
+                        placeholder="Search brand, model, fuel..."
                         className="border border-gray-300 px-3 py-2 rounded-lg text-sm w-full md:w-64"
                     />
+                    <select
+                        value={limit}
+                        onChange={(e) => {
+                            setPage(1);
+                            setLimit(Number(e.target.value));
+                        }}
+                        className="border border-gray-300 px-2 py-2 rounded-lg text-sm"
+                    >
+                        {[5, 10, 20, 50].map((n) => (
+                            <option key={n} value={n}>
+                                {n} per page
+                            </option>
+                        ))}
+                    </select>
                     <button className="px-4 py-2 border bg-white text-gray-700 rounded-lg flex items-center gap-2">
                         <Download size={16} /> Export
                     </button>
@@ -86,125 +119,193 @@ export default function CarListPage() {
                 </div>
             </div>
 
-            <div className="bg-white shadow-sm rounded-xl overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 text-sm">
-                        <thead className="bg-gray-100 text-gray-600 text-left">
-                            <tr>
-                                <th className="px-4 py-3">Car</th>
-                                <th className="px-4 py-3">Details</th>
-                                <th className="px-4 py-3">Status</th>
-                                <th className="px-4 py-3">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filtered.map((car) => (
-                                <tr
-                                    key={car._id}
-                                    className="hover:bg-gray-50 border-t"
-                                >
-                                    <td className="px-4 py-3">
-                                        <div className="flex gap-4 items-center">
-                                            <img
-                                                src={car.images[0]}
-                                                alt={`${car.brand.name} ${car.model}`}
-                                                className="w-16 h-12 object-cover rounded-md"
-                                            />
-                                            <div>
-                                                <div className="font-semibold text-gray-900">
-                                                    {car.brand.name} {car.model}
-                                                </div>
-                                                <div className="text-gray-500 text-xs">
-                                                    Year: {car.year}
-                                                </div>
-                                                <div className="text-gray-500 text-xs">
-                                                    Color: {car.color}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-700">
-                                        <div className="capitalize">
-                                            {car.fuelType}
-                                        </div>
-                                        <div className="capitalize">
-                                            {car.transmission}
-                                        </div>
-                                        <div className="text-sm text-gray-500">
-                                            {car.mileage.toLocaleString()} km
-                                        </div>
-                                        <div className="text-sm text-gray-700 font-semibold">
-                                            ₹{car.price.toLocaleString()}
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex flex-col gap-1">
-                                            <span
-                                                className={`px-2 py-1 text-xs rounded-full w-fit font-medium ${
-                                                    car.isApproved
-                                                        ? "bg-green-100 text-green-800"
-                                                        : "bg-yellow-100 text-yellow-800"
-                                                }`}
-                                            >
-                                                {car.isApproved
-                                                    ? "Approved"
-                                                    : "Pending"}
-                                            </span>
-                                            <span
-                                                className={`px-2 py-1 text-xs rounded-full w-fit font-medium ${
-                                                    car.isFeatured
-                                                        ? "bg-purple-100 text-purple-800"
-                                                        : "bg-gray-100 text-gray-800"
-                                                }`}
-                                            >
-                                                {car.isFeatured
-                                                    ? "Featured"
-                                                    : "Not Featured"}
-                                            </span>
-                                            <span
-                                                className={`px-2 py-1 text-xs rounded-full w-fit font-medium ${
-                                                    car.isSold
-                                                        ? "bg-red-100 text-red-800"
-                                                        : "bg-blue-100 text-blue-800"
-                                                }`}
-                                            >
-                                                {car.isSold
-                                                    ? "Sold"
-                                                    : "Available"}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex gap-3">
-                                            <Link
-                                                href={`/admin/cars/${car._id}/edit`}
-                                                className="flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded hover:bg-blue-100"
-                                            >
-                                                <Edit size={14} />
-                                                Edit
-                                            </Link>
-                                            <button className="flex items-center gap-1 px-3 py-1 bg-red-50 text-red-700 rounded hover:bg-red-100">
-                                                <Trash2 size={14} />
-                                                Delete
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            {filtered.length === 0 && (
+            {isLoading ? (
+                <Loader />
+            ) : (
+                <div className="bg-white shadow-sm rounded-xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full text-sm table-fixed divide-y divide-gray-200">
+                            <thead className="bg-gray-100 text-gray-600 text-left">
                                 <tr>
-                                    <td
-                                        colSpan={4}
-                                        className="px-4 py-6 text-center text-gray-500"
-                                    >
-                                        No cars found.
-                                    </td>
+                                    <th className="px-4 py-3 w-1/3">Car</th>
+                                    <th className="px-4 py-3 w-1/4">Details</th>
+                                    <th className="px-4 py-3 w-1/4">Status</th>
+                                    <th className="px-4 py-3 w-1/5">Actions</th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {cars.length > 0 ? (
+                                    cars.map((car) => (
+                                        <tr
+                                            key={car._id}
+                                            className="hover:bg-gray-50 border-t transition"
+                                        >
+                                            <td className="px-4 py-3 align-top">
+                                                <div className="flex items-start gap-3">
+                                                    <img
+                                                        src={
+                                                            car.images?.[0]
+                                                                ? `http://localhost:5000/uploads/cars/${car.images[0]}`
+                                                                : "/fallback-car.jpg"
+                                                        }
+                                                        alt="car"
+                                                        className="w-16 h-12 object-cover rounded-md"
+                                                    />
+                                                    <div className="space-y-0.5">
+                                                        <p className="font-semibold text-gray-900 text-sm">
+                                                            {car.brand?.name}{" "}
+                                                            {car.modelName}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500">
+                                                            Year: {car.year}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500">
+                                                            Color: {car.color}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3 text-gray-700 align-top">
+                                                <div className="space-y-1">
+                                                    <p className="capitalize">
+                                                        {car.fuelType}
+                                                    </p>
+                                                    <p className="capitalize">
+                                                        {car.transmission}
+                                                    </p>
+                                                    <p className="text-sm text-gray-500">
+                                                        {car.mileage?.toLocaleString()}{" "}
+                                                        km
+                                                    </p>
+                                                    <p className="text-sm font-semibold">
+                                                        ₹
+                                                        {car.price?.toLocaleString()}
+                                                    </p>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3 align-top">
+                                                <div className="flex flex-col gap-1">
+                                                    <span
+                                                        className={`px-2 py-1 text-xs rounded-full font-medium w-fit ${
+                                                            car.isApproved
+                                                                ? "bg-green-100 text-green-800"
+                                                                : "bg-yellow-100 text-yellow-800"
+                                                        }`}
+                                                    >
+                                                        {car.isApproved
+                                                            ? "Approved"
+                                                            : "Pending"}
+                                                    </span>
+                                                    <span
+                                                        className={`px-2 py-1 text-xs rounded-full font-medium w-fit ${
+                                                            car.isFeatured
+                                                                ? "bg-purple-100 text-purple-800"
+                                                                : "bg-gray-100 text-gray-800"
+                                                        }`}
+                                                    >
+                                                        {car.isFeatured
+                                                            ? "Featured"
+                                                            : "Not Featured"}
+                                                    </span>
+                                                    <span
+                                                        className={`px-2 py-1 text-xs rounded-full font-medium w-fit ${
+                                                            car.isSold
+                                                                ? "bg-red-100 text-red-800"
+                                                                : "bg-blue-100 text-blue-800"
+                                                        }`}
+                                                    >
+                                                        {car.isSold
+                                                            ? "Sold"
+                                                            : "Available"}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3 align-top">
+                                                <div className="flex gap-2">
+                                                    <Link
+                                                        href={`/admin/cars/${car._id}/edit`}
+                                                        className="px-3 py-1 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 flex items-center gap-1 text-xs"
+                                                    >
+                                                        <Edit size={14} />
+                                                        Edit
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => {
+                                                            if (
+                                                                confirm(
+                                                                    "Are you sure to delete this car?"
+                                                                )
+                                                            ) {
+                                                                mutation.mutate(
+                                                                    car._id
+                                                                );
+                                                            }
+                                                        }}
+                                                        className="px-3 py-1 bg-red-50 text-red-700 rounded hover:bg-red-100 flex items-center gap-1 text-xs"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td
+                                            colSpan={4}
+                                            className="px-4 py-6 text-center text-gray-500"
+                                        >
+                                            No cars found.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {pagination.pages > 1 && (
+                        <div className="flex justify-center items-center gap-2 px-4 py-4 border-t">
+                            <button
+                                onClick={() =>
+                                    setPage((p) => Math.max(p - 1, 1))
+                                }
+                                disabled={page === 1}
+                                className="p-2 rounded border border-gray-300 bg-white text-gray-700 disabled:opacity-50"
+                            >
+                                <ChevronLeft size={16} />
+                            </button>
+                            {Array.from(
+                                { length: pagination.pages },
+                                (_, i) => i + 1
+                            ).map((p) => (
+                                <button
+                                    key={p}
+                                    onClick={() => setPage(p)}
+                                    className={`w-8 h-8 rounded border text-sm ${
+                                        page === p
+                                            ? "bg-blue-600 text-white border-blue-600"
+                                            : "bg-white text-gray-700 border-gray-300"
+                                    }`}
+                                >
+                                    {p}
+                                </button>
+                            ))}
+                            <button
+                                onClick={() =>
+                                    setPage((p) =>
+                                        Math.min(p + 1, pagination.pages)
+                                    )
+                                }
+                                disabled={page === pagination.pages}
+                                className="p-2 rounded border border-gray-300 bg-white text-gray-700 disabled:opacity-50"
+                            >
+                                <ChevronRight size={16} />
+                            </button>
+                        </div>
+                    )}
                 </div>
-            </div>
+            )}
         </div>
     );
 }

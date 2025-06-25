@@ -2,18 +2,23 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import useAuthRedirect from "@/hooks/useAuthRedirect";
 
 const FUEL_TYPES = ["Petrol", "Diesel", "Electric", "Hybrid", "CNG"];
 const TRANSMISSIONS = ["Automatic", "Manual"];
+const CONDITIONS = ["new", "used"];
 
 export default function AddCarPage() {
+    useAuthRedirect(); // 👈 Protect the route
     const router = useRouter();
 
+    const [brands, setBrands] = useState([]);
     const [form, setForm] = useState({
         brand: "",
-        model: "",
+        modelName: "",
         year: "",
         price: "",
         mileage: "",
@@ -21,12 +26,34 @@ export default function AddCarPage() {
         transmission: "",
         color: "",
         description: "",
+        condition: "",
+        isApproved: true,
+        isFeatured: false,
+        isSold: false,
         images: [],
     });
 
+    // Fetch brands
+    useEffect(() => {
+        const fetchBrands = async () => {
+            try {
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL}/brand/all?page=1&limit=10`
+                );
+                const data = await res.json();
+                setBrands(data.data || []);
+            } catch (err) {
+                console.error("Failed to fetch brands", err);
+                toast.error("Failed to load brands");
+            }
+        };
+        fetchBrands();
+    }, []);
+
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm((prev) => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        const finalValue = type === "checkbox" ? checked : value;
+        setForm((prev) => ({ ...prev, [name]: finalValue }));
     };
 
     const handleImageUpload = (e) => {
@@ -47,20 +74,28 @@ export default function AddCarPage() {
         });
 
         try {
-            const res = await fetch("/api/cars", {
-                method: "POST",
-                body: formData,
-            });
+            const token = localStorage.getItem("token");
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/car/create`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: formData,
+                }
+            );
 
-            if (res.ok) {
-                alert("Car added successfully!");
-                router.push("/admin/cars");
-            } else {
-                alert("Error adding car.");
-            }
+            const result = await res.json();
+
+            if (!res.ok)
+                throw new Error(result.message || "Something went wrong");
+
+            toast.success("Car added successfully!");
+            router.push("/admin/cars");
         } catch (err) {
             console.error(err);
-            alert("Something went wrong.");
+            toast.error(`Failed to add car: ${err.message}`);
         }
     };
 
@@ -75,24 +110,23 @@ export default function AddCarPage() {
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-10">
-                    {/* Car Info */}
-                    <div className="bg-gray-50 rounded-xl shadow-sm p-6 space-y-6">
-                        <h2 className="text-xl font-semibold text-gray-700">
-                            Car Information
-                        </h2>
-
+                    <Section title="Car Information">
                         <div className="grid md:grid-cols-3 gap-4">
-                            <Input
+                            <Select
                                 name="brand"
-                                label="Brand ID *"
+                                label="Brand *"
                                 value={form.brand}
                                 onChange={handleChange}
                                 required
+                                options={brands.map((b) => ({
+                                    label: b.name,
+                                    value: b._id,
+                                }))}
                             />
                             <Input
-                                name="model"
-                                label="Model *"
-                                value={form.model}
+                                name="modelName"
+                                label="Model Name *"
+                                value={form.modelName}
                                 onChange={handleChange}
                                 required
                             />
@@ -109,7 +143,7 @@ export default function AddCarPage() {
                         <div className="grid md:grid-cols-3 gap-4">
                             <Input
                                 name="price"
-                                label="Price ($) *"
+                                label="Price (₹) *"
                                 type="number"
                                 value={form.price}
                                 onChange={handleChange}
@@ -129,19 +163,18 @@ export default function AddCarPage() {
                                 onChange={handleChange}
                             />
                         </div>
-                    </div>
+                    </Section>
 
-                    {/* Specifications */}
-                    <div className="bg-gray-50 rounded-xl shadow-sm p-6 space-y-6">
-                        <h2 className="text-xl font-semibold text-gray-700">
-                            Specifications
-                        </h2>
+                    <Section title="Specifications">
                         <div className="grid md:grid-cols-2 gap-4">
                             <Select
                                 name="fuelType"
                                 label="Fuel Type *"
                                 value={form.fuelType}
-                                options={FUEL_TYPES}
+                                options={FUEL_TYPES.map((v) => ({
+                                    label: v,
+                                    value: v,
+                                }))}
                                 onChange={handleChange}
                                 required
                             />
@@ -149,57 +182,80 @@ export default function AddCarPage() {
                                 name="transmission"
                                 label="Transmission *"
                                 value={form.transmission}
-                                options={TRANSMISSIONS}
+                                options={TRANSMISSIONS.map((v) => ({
+                                    label: v,
+                                    value: v,
+                                }))}
                                 onChange={handleChange}
                                 required
                             />
                         </div>
-                    </div>
+                        <Select
+                            name="condition"
+                            label="Condition *"
+                            value={form.condition}
+                            options={CONDITIONS.map((v) => ({
+                                label: v,
+                                value: v,
+                            }))}
+                            onChange={handleChange}
+                            required
+                        />
+                        <div className="flex flex-wrap gap-6 mt-4">
+                            <Checkbox
+                                name="isApproved"
+                                label="Approved"
+                                checked={form.isApproved}
+                                onChange={handleChange}
+                            />
+                            <Checkbox
+                                name="isFeatured"
+                                label="Featured"
+                                checked={form.isFeatured}
+                                onChange={handleChange}
+                            />
+                            <Checkbox
+                                name="isSold"
+                                label="Sold"
+                                checked={form.isSold}
+                                onChange={handleChange}
+                            />
+                        </div>
+                    </Section>
 
-                    {/* Images */}
-                    <div className="bg-gray-50 rounded-xl shadow-sm p-6 space-y-4">
-                        <h2 className="text-xl font-semibold text-gray-700">
-                            Images
-                        </h2>
-
+                    <Section title="Images">
                         <input
                             type="file"
                             accept="image/*"
                             multiple
                             onChange={handleImageUpload}
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg text-gray-700 bg-white focus:outline-none"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                         />
-
                         {form.images.length > 0 && (
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                                {form.images.map((file, index) => (
+                                {form.images.map((file, i) => (
                                     <img
-                                        key={index}
+                                        key={i}
                                         src={URL.createObjectURL(file)}
-                                        alt={`preview-${index}`}
-                                        className="h-28 w-full object-cover rounded-md shadow-sm"
+                                        alt="preview"
+                                        className="h-28 w-full object-cover rounded-md"
                                     />
                                 ))}
                             </div>
                         )}
-                    </div>
+                    </Section>
 
-                    {/* Description */}
-                    <div className="bg-gray-50 rounded-xl shadow-sm p-6 space-y-4">
-                        <h2 className="text-xl font-semibold text-gray-700">
-                            Description
-                        </h2>
+                    <Section title="Description">
                         <textarea
                             name="description"
                             rows={4}
-                            placeholder="Write a detailed description..."
                             value={form.description}
                             onChange={handleChange}
-                            className="mt-1 w-full px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-100"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                            placeholder="Write car description..."
                         />
-                    </div>
+                    </Section>
 
-                    {/* Submit */}
                     <div>
                         <button
                             type="submit"
@@ -231,7 +287,7 @@ function Input({
                 value={value}
                 onChange={onChange}
                 required={required}
-                className="mt-1 w-full px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-100"
+                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"
             />
         </div>
     );
@@ -246,15 +302,39 @@ function Select({ name, label, value, options, onChange, required = false }) {
                 value={value}
                 onChange={onChange}
                 required={required}
-                className="mt-1 w-full px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-100"
+                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"
             >
                 <option value="">Select</option>
                 {options.map((opt) => (
-                    <option key={opt} value={opt}>
-                        {opt}
+                    <option key={opt.value} value={opt.value}>
+                        {opt.label}
                     </option>
                 ))}
             </select>
+        </div>
+    );
+}
+
+function Checkbox({ name, label, checked, onChange }) {
+    return (
+        <label className="flex items-center gap-2 text-sm text-gray-600">
+            <input
+                type="checkbox"
+                name={name}
+                checked={checked}
+                onChange={onChange}
+                className="w-4 h-4"
+            />
+            {label}
+        </label>
+    );
+}
+
+function Section({ title, children }) {
+    return (
+        <div className="bg-gray-50 rounded-xl shadow-sm p-6 space-y-4">
+            <h2 className="text-xl font-semibold text-gray-700">{title}</h2>
+            {children}
         </div>
     );
 }
