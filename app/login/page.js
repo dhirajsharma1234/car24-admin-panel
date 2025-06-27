@@ -13,32 +13,43 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const router = useRouter();
 
+    console.log(email);
+    console.log(password);
+
     const loginMutation = useMutation({
         mutationFn: async ({ email, password }) => {
             const res = await axios.post(
-                `http://localhost:5000/api/user/login`,
+                `${process.env.NEXT_PUBLIC_API_URL}/user/login`,
                 {
                     email,
                     password,
                 }
             );
+            console.log("response");
+            console.log(res);
+
             return res.data;
         },
         onSuccess: (data) => {
+            console.log("Data");
+            console.log(data);
+
             localStorage.setItem("token", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
             toast.success("Login successful!");
             router.push("/admin/dashboard");
         },
-        onError: () => {
+        onError: (error) => {
             console.log("Login failed. Check your credentials.");
-
+            console.log(error);
             toast.error("Login failed. Check your credentials.");
         },
     });
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        console.log("mutate");
+
         loginMutation.mutate({ email, password });
     };
 

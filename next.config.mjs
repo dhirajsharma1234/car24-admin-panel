@@ -10,7 +10,7 @@ const nextConfig = {
 
     //added manually
     images: {
-        domains: ["localhost"], // 👈 Allow images from localhost
+        domains: ["cardikhao-production.up.railway.app"], // 👈 Allow images from localhost
     },
 };
 

@@ -19,7 +19,7 @@ import { Loader } from "@/components/loader";
 
 const fetchSellRequests = async (page, limit, token) => {
     const { data } = await axios.get(
-        `http://localhost:5000/api/sell/car?page=${page}&limit=${limit}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/sell/car?page=${page}&limit=${limit}`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -31,7 +31,7 @@ const fetchSellRequests = async (page, limit, token) => {
 
 const updateSellRequestStatus = async ({ id, status, token }) => {
     await axios.patch(
-        `http://localhost:5000/api/sell/car/${id}/status`,
+        `${process.env.NEXT_PUBLIC_API_URL}/sell/car/${id}/status`,
         { status },
         {
             headers: {
@@ -173,7 +173,7 @@ export default function SellRequestsPage() {
                                             <img
                                                 src={
                                                     req.images?.[0]
-                                                        ? `http://localhost:5000/uploads/cars/${req.images[0]}`
+                                                        ? `https://cardikhao-production.up.railway.app/uploads/cars/${req.images[0]}`
                                                         : "/fallback-car.jpg"
                                                 }
                                                 alt={req.modelName}

@@ -14,7 +14,7 @@ const fetchBrands = async ({ queryKey }) => {
     const [_key, page, limit] = queryKey;
     const token = localStorage.getItem("token");
     const res = await axios.get(
-        `http://localhost:5000/api/brand/all?page=${page}&limit=${limit}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/brand/all?page=${page}&limit=${limit}`,
         {
             headers: { Authorization: `Bearer ${token}` },
         }
@@ -24,19 +24,23 @@ const fetchBrands = async ({ queryKey }) => {
 
 const deleteBrand = async (id) => {
     const token = localStorage.getItem("token");
-    await axios.delete(`http://localhost:5000/api/brand/${id}`, {
+    await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/brand/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
     });
 };
 
 const createBrand = async (formData) => {
     const token = localStorage.getItem("token");
-    await axios.post(`http://localhost:5000/api/brand/create`, formData, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-        },
-    });
+    await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/brand/create`,
+        formData,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data",
+            },
+        }
+    );
 };
 
 export default function BrandListPage() {
@@ -141,7 +145,7 @@ export default function BrandListPage() {
                             className="bg-white shadow-sm rounded-lg p-4 flex flex-col items-center text-center"
                         >
                             <Image
-                                src={`http://localhost:5000/uploads/brands/${brand.logo}`}
+                                src={`https://cardikhao-production.up.railway.app/uploads/brands/${brand.logo}`}
                                 alt={brand.name}
                                 width={80}
                                 height={80}

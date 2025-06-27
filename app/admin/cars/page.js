@@ -21,7 +21,7 @@ const fetchCars = async ({ queryKey }) => {
     const [_key, page, limit, search] = queryKey;
     const token = localStorage.getItem("token");
     const res = await axios.get(
-        `http://localhost:5000/api/car/all?page=${page}&limit=${limit}&search=${search}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/car/all?page=${page}&limit=${limit}&search=${search}`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -33,7 +33,7 @@ const fetchCars = async ({ queryKey }) => {
 
 const deleteCar = async (id) => {
     const token = localStorage.getItem("token");
-    await axios.delete(`http://localhost:5000/api/car/${id}`, {
+    await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/car/${id}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -145,7 +145,7 @@ export default function CarListPage() {
                                                     <img
                                                         src={
                                                             car.images?.[0]
-                                                                ? `http://localhost:5000/uploads/cars/${car.images[0]}`
+                                                                ? `https://cardikhao-production.up.railway.app/uploads/cars/${car.images[0]}`
                                                                 : "/fallback-car.jpg"
                                                         }
                                                         alt="car"

@@ -19,9 +19,12 @@ export default function AdminProfilePage() {
         const fetchProfile = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const res = await fetch(`http://localhost:5000/api/user/me`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL}/user/me`,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                );
 
                 const json = await res.json();
 
@@ -54,14 +57,17 @@ export default function AdminProfilePage() {
 
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`http://localhost:5000/api/user/update`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(form),
-            });
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/user/update`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(form),
+                }
+            );
 
             const json = await res.json();
             if (res.ok && json.status) {

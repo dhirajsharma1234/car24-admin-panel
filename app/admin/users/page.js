@@ -25,7 +25,7 @@ export default function EnquiriesPage() {
         const [, page] = queryKey;
         const token = localStorage.getItem("token");
         const res = await axios.get(
-            `http://localhost:5000/api/enquiry?page=${page}&limit=${itemsPerPage}`,
+            `${process.env.NEXT_PUBLIC_API_URL}/enquiry?page=${page}&limit=${itemsPerPage}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -50,7 +50,7 @@ export default function EnquiriesPage() {
         mutationFn: async ({ id, status }) => {
             const token = localStorage.getItem("token");
             const res = await axios.patch(
-                `http://localhost:5000/api/enquiry/${id}/status`,
+                `${process.env.NEXT_PUBLIC_API_URL}/enquiry/${id}/status`,
                 { status },
                 {
                     headers: {

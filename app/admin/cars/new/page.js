@@ -38,7 +38,7 @@ export default function AddCarPage() {
         const fetchBrands = async () => {
             try {
                 const res = await fetch(
-                    `http://localhost:5000/api/brand/all?page=1&limit=10`
+                    `${process.env.NEXT_PUBLIC_API_URL}/brand/all?page=1&limit=10`
                 );
                 const data = await res.json();
                 setBrands(data.data || []);
@@ -75,13 +75,16 @@ export default function AddCarPage() {
 
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`http://localhost:5000/api/car/create`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                body: formData,
-            });
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/car/create`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: formData,
+                }
+            );
 
             const result = await res.json();
 
