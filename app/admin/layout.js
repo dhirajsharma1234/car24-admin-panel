@@ -8,6 +8,7 @@ import AdminSidebar from "@/components/admin-sidebar";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import useTokenChecker from "@/hooks/useAuthRedirect";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,12 +18,7 @@ export default function AdminLayout({ children }) {
     const dropdownRef = useRef(null);
 
     //protected route
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            router.replace("/login");
-        }
-    }, [router]);
+    useTokenChecker(); // 🔐 checks token on every admin page
 
     // Close dropdown when clicking outside
     useEffect(() => {

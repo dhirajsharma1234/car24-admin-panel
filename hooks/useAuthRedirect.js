@@ -1,12 +1,10 @@
 /** @format */
 
-// hooks/useAuthRedirect.ts
-"use client";
-
+// hooks/useTokenChecker.ts
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function useAuthRedirect() {
+export default function useTokenChecker() {
     const router = useRouter();
 
     useEffect(() => {
@@ -14,5 +12,5 @@ export default function useAuthRedirect() {
         if (!token) {
             router.replace("/login");
         }
-    }, [router]);
+    }, []);
 }

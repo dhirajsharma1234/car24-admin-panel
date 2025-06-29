@@ -10,6 +10,16 @@ import useAuthRedirect from "@/hooks/useAuthRedirect";
 const FUEL_TYPES = ["Petrol", "Diesel", "Electric", "Hybrid", "CNG"];
 const TRANSMISSIONS = ["Automatic", "Manual"];
 const CONDITIONS = ["new", "used"];
+const BODY_TYPES = [
+    "SEDAN",
+    "SUV",
+    "HATCHBACK",
+    "CONVERTIBLE",
+    "COUPE",
+    "PICKUP",
+    "VAN",
+    "WAGON",
+];
 
 export default function AddCarPage() {
     useAuthRedirect(); // 👈 Protect the route
@@ -22,6 +32,8 @@ export default function AddCarPage() {
         year: "",
         price: "",
         mileage: "",
+        kmRun: "",
+        bodyType: "",
         fuelType: "",
         transmission: "",
         color: "",
@@ -30,6 +42,7 @@ export default function AddCarPage() {
         isApproved: true,
         isFeatured: false,
         isSold: false,
+        city: "",
         images: [],
     });
 
@@ -160,6 +173,32 @@ export default function AddCarPage() {
                                 name="color"
                                 label="Color"
                                 value={form.color}
+                                onChange={handleChange}
+                            />
+                        </div>
+                        <div className="grid md:grid-cols-3 gap-4">
+                            <Select
+                                name="bodyType"
+                                label="Body Type *"
+                                value={form.bodyType}
+                                onChange={handleChange}
+                                required
+                                options={BODY_TYPES.map((type) => ({
+                                    label: type,
+                                    value: type,
+                                }))}
+                            />
+                            <Input
+                                name="kmRun"
+                                label="Kilometers Run"
+                                type="number"
+                                value={form.kmRun}
+                                onChange={handleChange}
+                            />
+                            <Input
+                                name="city"
+                                label="City"
+                                value={form.city}
                                 onChange={handleChange}
                             />
                         </div>

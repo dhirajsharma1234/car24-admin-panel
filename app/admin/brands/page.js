@@ -1,5 +1,4 @@
 /** @format */
-
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -50,13 +49,16 @@ export default function BrandListPage() {
     const logoRef = useRef();
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
+    const [togglingBrandId, setTogglingBrandId] = useState(null);
 
+    // ✅ Fetch brands
     const { data, isLoading } = useQuery({
         queryKey: ["brands", page, limit],
         queryFn: fetchBrands,
         keepPreviousData: true,
     });
 
+    // ✅ Delete brand
     const deleteMutation = useMutation({
         mutationFn: deleteBrand,
         onSuccess: () => {
@@ -66,6 +68,7 @@ export default function BrandListPage() {
         onError: () => toast.error("Failed to delete brand"),
     });
 
+    // ✅ Add brand
     const addMutation = useMutation({
         mutationFn: createBrand,
         onSuccess: () => {
@@ -78,12 +81,29 @@ export default function BrandListPage() {
         onError: () => toast.error("Failed to add brand"),
     });
 
-    const brands = data?.data || [];
-    const pagination = {
-        total: data?.total || 0,
-        page: data?.page || 1,
-        totalPages: data?.totalPages || 1,
-    };
+    // ✅ Toggle enable/disable
+    const toggleBrandMutation = useMutation({
+        mutationFn: async ({ id, isEnable }) => {
+            const token = localStorage.getItem("token");
+            return axios.patch(
+                `${process.env.NEXT_PUBLIC_API_URL}/brand/enableDisableBrand/${id}`,
+                { isEnable },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+        },
+        onMutate: ({ id }) => setTogglingBrandId(id),
+        onSettled: () => {
+            setTogglingBrandId(null);
+            queryClient.invalidateQueries({ queryKey: ["brands"] });
+        },
+        onSuccess: () => toast.success("Brand status updated"),
+        onError: () => toast.error("Failed to update brand status"),
+    });
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -98,12 +118,20 @@ export default function BrandListPage() {
         addMutation.mutate(formData);
     };
 
+    const brands = data?.data || [];
+    const pagination = {
+        total: data?.total || 0,
+        page: data?.page || 1,
+        totalPages: data?.totalPages || 1,
+    };
+
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
             <h1 className="text-2xl font-bold text-gray-800 mb-4">
                 Car Brands
             </h1>
 
+            {/* Form */}
             <form
                 onSubmit={handleSubmit}
                 className="mb-6 grid gap-4 grid-cols-1 md:grid-cols-3 items-end"
@@ -135,6 +163,7 @@ export default function BrandListPage() {
                 </button>
             </form>
 
+            {/* Brand List */}
             {isLoading ? (
                 <Loader />
             ) : (
@@ -157,25 +186,60 @@ export default function BrandListPage() {
                             <p className="text-sm text-gray-500 mb-2">
                                 {brand.description}
                             </p>
-                            <button
-                                onClick={() => {
-                                    if (
-                                        confirm(
-                                            "Are you sure you want to delete this brand?"
-                                        )
-                                    ) {
-                                        deleteMutation.mutate(brand._id);
+                            <div className="flex gap-3">
+                                {/* Enable/Disable Button */}
+                                <button
+                                    onClick={() =>
+                                        toggleBrandMutation.mutate({
+                                            id: brand._id,
+                                            isEnable: !brand.isEnable,
+                                        })
                                     }
-                                }}
-                                className="text-red-600 text-sm flex items-center gap-1 hover:underline"
-                            >
-                                <Trash2 size={14} /> Delete
-                            </button>
+                                    disabled={togglingBrandId === brand._id}
+                                    className={`relative w-[90px] h-[32px] text-sm px-3 py-1 rounded transition-all duration-200
+        ${
+            brand.isEnable
+                ? "bg-green-100 text-green-800 hover:bg-green-200"
+                : "bg-red-100 text-red-800 hover:bg-red-200"
+        }
+        flex items-center justify-center overflow-hidden
+        cursor-pointer disabled:cursor-not-allowed`}
+                                >
+                                    {togglingBrandId === brand._id ? (
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <Loader className="w-4 h-4 animate-spin" />
+                                        </div>
+                                    ) : (
+                                        <span className="whitespace-nowrap">
+                                            {brand.isEnable
+                                                ? "Disable"
+                                                : "Enable"}
+                                        </span>
+                                    )}
+                                </button>
+
+                                {/* Delete Button */}
+                                <button
+                                    onClick={() => {
+                                        if (
+                                            confirm(
+                                                "Are you sure you want to delete this brand?"
+                                            )
+                                        ) {
+                                            deleteMutation.mutate(brand._id);
+                                        }
+                                    }}
+                                    className="text-red-600 text-sm flex items-center gap-1 hover:underline"
+                                >
+                                    <Trash2 size={14} /> Delete
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
             )}
 
+            {/* Pagination */}
             {pagination.totalPages > 1 && (
                 <div className="flex justify-center items-center gap-2 mt-6">
                     <button

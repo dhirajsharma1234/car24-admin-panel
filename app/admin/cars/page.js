@@ -74,7 +74,8 @@ export default function CarListPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
+            {/* Header */}
             <div className="flex justify-between items-center mb-6 flex-col md:flex-row gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">
@@ -119,153 +120,315 @@ export default function CarListPage() {
                 </div>
             </div>
 
+            {/* Loading */}
             {isLoading ? (
                 <Loader />
             ) : (
-                <div className="bg-white shadow-sm rounded-xl overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full text-sm table-fixed divide-y divide-gray-200">
-                            <thead className="bg-gray-100 text-gray-600 text-left">
-                                <tr>
-                                    <th className="px-4 py-3 w-1/3">Car</th>
-                                    <th className="px-4 py-3 w-1/4">Details</th>
-                                    <th className="px-4 py-3 w-1/4">Status</th>
-                                    <th className="px-4 py-3 w-1/5">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {cars.length > 0 ? (
-                                    cars.map((car) => (
-                                        <tr
-                                            key={car._id}
-                                            className="hover:bg-gray-50 border-t transition"
-                                        >
-                                            <td className="px-4 py-3 align-top">
-                                                <div className="flex items-start gap-3">
-                                                    <img
-                                                        src={
-                                                            car.images?.[0]
-                                                                ? `https://cardikhao-production.up.railway.app/uploads/cars/${car.images[0]}`
-                                                                : "/fallback-car.jpg"
-                                                        }
-                                                        alt="car"
-                                                        className="w-16 h-12 object-cover rounded-md"
-                                                    />
-                                                    <div className="space-y-0.5">
-                                                        <p className="font-semibold text-gray-900 text-sm">
-                                                            {car.brand?.name}{" "}
-                                                            {car.modelName}
-                                                        </p>
-                                                        <p className="text-xs text-gray-500">
-                                                            Year: {car.year}
-                                                        </p>
-                                                        <p className="text-xs text-gray-500">
-                                                            Color: {car.color}
-                                                        </p>
+                <>
+                    {/* Desktop Table View */}
+                    <div className="bg-white shadow-sm rounded-xl overflow-hidden hidden md:block">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full text-sm table-fixed divide-y divide-gray-200">
+                                <thead className="bg-gray-100 text-gray-600 text-left">
+                                    <tr>
+                                        <th className="px-4 py-3 w-1/4">Car</th>
+                                        <th className="px-4 py-3 w-1/4">
+                                            Specs
+                                        </th>
+                                        <th className="px-4 py-3 w-1/4">
+                                            Technical
+                                        </th>
+                                        <th className="px-4 py-3 w-1/4">
+                                            City
+                                        </th>
+                                        <th className="px-4 py-3 w-1/4">
+                                            Status
+                                        </th>
+                                        <th className="px-4 py-3 w-1/5">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {cars.length > 0 ? (
+                                        cars.map((car) => (
+                                            <tr
+                                                key={car._id}
+                                                className="hover:bg-gray-50 border-t transition"
+                                            >
+                                                <td className="px-4 py-3 align-top">
+                                                    <div className="flex items-start gap-3">
+                                                        <img
+                                                            src={
+                                                                car.images?.[0]
+                                                                    ? `https://cardikhao-production.up.railway.app/uploads/cars/${car.images[0]}`
+                                                                    : "/fallback-car.jpg"
+                                                            }
+                                                            alt="car"
+                                                            className="w-16 h-12 object-cover rounded-md"
+                                                        />
+                                                        <div className="space-y-0.5">
+                                                            <p className="font-semibold text-gray-900 text-sm">
+                                                                {
+                                                                    car.brand
+                                                                        ?.name
+                                                                }{" "}
+                                                                {car.modelName}
+                                                            </p>
+                                                            <p className="text-xs text-gray-500">
+                                                                Year: {car.year}
+                                                            </p>
+                                                            <p className="text-xs text-gray-500">
+                                                                Color:{" "}
+                                                                {car.color}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3 text-gray-700 align-top">
-                                                <div className="space-y-1">
-                                                    <p className="capitalize">
-                                                        {car.fuelType}
-                                                    </p>
-                                                    <p className="capitalize">
-                                                        {car.transmission}
-                                                    </p>
-                                                    <p className="text-sm text-gray-500">
-                                                        {car.mileage?.toLocaleString()}{" "}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-700 align-top">
+                                                    <p>
+                                                        Mileage:{" "}
+                                                        {car.mileage?.toLocaleString() ??
+                                                            0}{" "}
                                                         km
                                                     </p>
-                                                    <p className="text-sm font-semibold">
+                                                    <p>
+                                                        Run:{" "}
+                                                        {car.kmRun?.toLocaleString() ??
+                                                            0}{" "}
+                                                        km
+                                                    </p>
+                                                    <p className="font-semibold">
                                                         ₹
                                                         {car.price?.toLocaleString()}
                                                     </p>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3 align-top">
-                                                <div className="flex flex-col gap-1">
-                                                    <span
-                                                        className={`px-2 py-1 text-xs rounded-full font-medium w-fit ${
-                                                            car.isApproved
-                                                                ? "bg-green-100 text-green-800"
-                                                                : "bg-yellow-100 text-yellow-800"
-                                                        }`}
-                                                    >
-                                                        {car.isApproved
-                                                            ? "Approved"
-                                                            : "Pending"}
-                                                    </span>
-                                                    <span
-                                                        className={`px-2 py-1 text-xs rounded-full font-medium w-fit ${
-                                                            car.isFeatured
-                                                                ? "bg-purple-100 text-purple-800"
-                                                                : "bg-gray-100 text-gray-800"
-                                                        }`}
-                                                    >
-                                                        {car.isFeatured
-                                                            ? "Featured"
-                                                            : "Not Featured"}
-                                                    </span>
-                                                    <span
-                                                        className={`px-2 py-1 text-xs rounded-full font-medium w-fit ${
-                                                            car.isSold
-                                                                ? "bg-red-100 text-red-800"
-                                                                : "bg-blue-100 text-blue-800"
-                                                        }`}
-                                                    >
-                                                        {car.isSold
-                                                            ? "Sold"
-                                                            : "Available"}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3 align-top">
-                                                <div className="flex gap-2">
-                                                    <Link
-                                                        href={`/admin/cars/${car._id}/edit`}
-                                                        className="px-3 py-1 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 flex items-center gap-1 text-xs"
-                                                    >
-                                                        <Edit size={14} />
-                                                        Edit
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => {
-                                                            if (
-                                                                confirm(
-                                                                    "Are you sure to delete this car?"
-                                                                )
-                                                            ) {
-                                                                mutation.mutate(
-                                                                    car._id
-                                                                );
-                                                            }
-                                                        }}
-                                                        className="px-3 py-1 bg-red-50 text-red-700 rounded hover:bg-red-100 flex items-center gap-1 text-xs"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                        Delete
-                                                    </button>
-                                                </div>
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-700 align-top">
+                                                    <p>Fuel: {car.fuelType}</p>
+                                                    <p>
+                                                        Transmission:{" "}
+                                                        {car.transmission}
+                                                    </p>
+                                                    <p>
+                                                        Body Type:{" "}
+                                                        {car.bodyType}
+                                                    </p>
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-700 align-top">
+                                                    <p>
+                                                        {car?.city
+                                                            ? car?.city
+                                                            : "N/A"}
+                                                    </p>
+                                                </td>
+                                                <td className="px-4 py-3 align-top">
+                                                    <div className="flex flex-col gap-1">
+                                                        <span
+                                                            className={`px-2 py-1 text-xs rounded-full font-medium w-fit ${
+                                                                car.isApproved
+                                                                    ? "bg-green-100 text-green-800"
+                                                                    : "bg-yellow-100 text-yellow-800"
+                                                            }`}
+                                                        >
+                                                            {car.isApproved
+                                                                ? "Approved"
+                                                                : "Pending"}
+                                                        </span>
+                                                        <span
+                                                            className={`px-2 py-1 text-xs rounded-full font-medium w-fit ${
+                                                                car.isFeatured
+                                                                    ? "bg-purple-100 text-purple-800"
+                                                                    : "bg-gray-100 text-gray-800"
+                                                            }`}
+                                                        >
+                                                            {car.isFeatured
+                                                                ? "Featured"
+                                                                : "Not Featured"}
+                                                        </span>
+                                                        <span
+                                                            className={`px-2 py-1 text-xs rounded-full font-medium w-fit ${
+                                                                car.isSold
+                                                                    ? "bg-red-100 text-red-800"
+                                                                    : "bg-blue-100 text-blue-800"
+                                                            }`}
+                                                        >
+                                                            {car.isSold
+                                                                ? "Sold"
+                                                                : "Available"}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 align-top">
+                                                    <div className="flex gap-2">
+                                                        <Link
+                                                            href={`/admin/cars/${car._id}/edit`}
+                                                            className="px-3 py-1 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 flex items-center gap-1 text-xs"
+                                                        >
+                                                            <Edit size={14} />{" "}
+                                                            Edit
+                                                        </Link>
+                                                        <button
+                                                            onClick={() => {
+                                                                if (
+                                                                    confirm(
+                                                                        "Are you sure to delete this car?"
+                                                                    )
+                                                                ) {
+                                                                    mutation.mutate(
+                                                                        car._id
+                                                                    );
+                                                                }
+                                                            }}
+                                                            className="px-3 py-1 bg-red-50 text-red-700 rounded hover:bg-red-100 flex items-center gap-1 text-xs"
+                                                        >
+                                                            <Trash2 size={14} />{" "}
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td
+                                                colSpan={5}
+                                                className="px-4 py-6 text-center text-gray-500"
+                                            >
+                                                No cars found.
                                             </td>
                                         </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td
-                                            colSpan={4}
-                                            className="px-4 py-6 text-center text-gray-500"
-                                        >
-                                            No cars found.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
+                    {/* Mobile Card View */}
+                    <div className="md:hidden space-y-4">
+                        {cars.map((car) => (
+                            <div
+                                key={car._id}
+                                className="bg-white rounded-xl shadow-sm border p-4 space-y-3"
+                            >
+                                <div className="flex gap-4">
+                                    <img
+                                        src={
+                                            car.images?.[0]
+                                                ? `https://cardikhao-production.up.railway.app/uploads/cars/${car.images[0]}`
+                                                : "/fallback-car.jpg"
+                                        }
+                                        alt="car"
+                                        className="w-28 h-20 object-cover rounded-md border"
+                                    />
+                                    <div className="flex-1">
+                                        <h2 className="font-semibold text-gray-900">
+                                            {car.brand?.name} {car.modelName}
+                                        </h2>
+                                        <p className="text-sm text-gray-500">
+                                            Year: {car.year} • Color:{" "}
+                                            {car.color}
+                                        </p>
+                                        <p className="text-sm font-bold text-blue-700 mt-1">
+                                            ₹{car.price?.toLocaleString()}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                                    <p>
+                                        <span className="font-medium">
+                                            Mileage:
+                                        </span>{" "}
+                                        {car.mileage?.toLocaleString() ?? 0} km
+                                    </p>
+                                    <p>
+                                        <span className="font-medium">
+                                            Run:
+                                        </span>{" "}
+                                        {car.kmRun?.toLocaleString() ?? 0} km
+                                    </p>
+                                    <p>
+                                        <span className="font-medium">
+                                            Fuel:
+                                        </span>{" "}
+                                        {car.fuelType}
+                                    </p>
+                                    <p>
+                                        <span className="font-medium">
+                                            Transmission:
+                                        </span>{" "}
+                                        {car.transmission}
+                                    </p>
+                                    <p>
+                                        <span className="font-medium">
+                                            Body Type:
+                                        </span>{" "}
+                                        {car.bodyType}
+                                    </p>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    <span
+                                        className={`text-xs px-2 py-1 rounded-full ${
+                                            car.isApproved
+                                                ? "bg-green-100 text-green-800"
+                                                : "bg-yellow-100 text-yellow-800"
+                                        }`}
+                                    >
+                                        {car.isApproved
+                                            ? "Approved"
+                                            : "Pending"}
+                                    </span>
+                                    <span
+                                        className={`text-xs px-2 py-1 rounded-full ${
+                                            car.isFeatured
+                                                ? "bg-purple-100 text-purple-800"
+                                                : "bg-gray-100 text-gray-800"
+                                        }`}
+                                    >
+                                        {car.isFeatured
+                                            ? "Featured"
+                                            : "Not Featured"}
+                                    </span>
+                                    <span
+                                        className={`text-xs px-2 py-1 rounded-full ${
+                                            car.isSold
+                                                ? "bg-red-100 text-red-800"
+                                                : "bg-blue-100 text-blue-800"
+                                        }`}
+                                    >
+                                        {car.isSold ? "Sold" : "Available"}
+                                    </span>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Link
+                                        href={`/admin/cars/${car._id}/edit`}
+                                        className="px-3 py-1 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 text-xs"
+                                    >
+                                        <Edit size={14} className="inline" />{" "}
+                                        Edit
+                                    </Link>
+                                    <button
+                                        onClick={() => {
+                                            if (
+                                                confirm(
+                                                    "Are you sure to delete this car?"
+                                                )
+                                            ) {
+                                                mutation.mutate(car._id);
+                                            }
+                                        }}
+                                        className="px-3 py-1 bg-red-50 text-red-700 rounded hover:bg-red-100 text-xs"
+                                    >
+                                        <Trash2 size={14} className="inline" />{" "}
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Pagination */}
                     {pagination.pages > 1 && (
-                        <div className="flex justify-center items-center gap-2 px-4 py-4 border-t">
+                        <div className="flex justify-center items-center gap-2 px-4 py-4 border-t mt-6">
                             <button
                                 onClick={() =>
                                     setPage((p) => Math.max(p - 1, 1))
@@ -304,7 +467,7 @@ export default function CarListPage() {
                             </button>
                         </div>
                     )}
-                </div>
+                </>
             )}
         </div>
     );

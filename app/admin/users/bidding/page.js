@@ -24,7 +24,7 @@ export default function EnquiriesPage() {
         const [, page] = queryKey;
         const token = localStorage.getItem("token");
         const res = await axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/enquiry?page=${page}&limit=${itemsPerPage}&type=enquiry`,
+            `${process.env.NEXT_PUBLIC_API_URL}/enquiry?page=${page}&limit=${itemsPerPage}&type=bidding`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -118,23 +118,25 @@ export default function EnquiriesPage() {
 
     return (
         <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">
-                        Enquiry Management
+                        Bidding Rates
                     </h1>
                     <p className="text-gray-500">
-                        Review and manage customer enquiries
+                        Review and manage customer bidding
                     </p>
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors w-full sm:w-auto">
-                    <Download size={16} />
-                    <span>Export</span>
-                </button>
+                <div className="flex gap-3 w-full md:w-auto">
+                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                        <Download size={16} />
+                        <span>Export</span>
+                    </button>
+                </div>
             </div>
 
-            {/* Desktop Table */}
-            <div className="hidden sm:block bg-white rounded-xl shadow-sm border overflow-hidden">
+            {/* Responsive Table */}
+            <div className="hidden md:block bg-white rounded-xl shadow-sm border overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
@@ -142,7 +144,8 @@ export default function EnquiriesPage() {
                                 {[
                                     "Name",
                                     "Contact",
-                                    "Car Info",
+                                    "Car ID",
+                                    "Price",
                                     "Date",
                                     "Status",
                                     "Actions",
@@ -157,80 +160,91 @@ export default function EnquiriesPage() {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {enquiries.map((enquiry) => (
-                                <tr
-                                    key={enquiry._id}
-                                    className="hover:bg-gray-50 transition-colors"
-                                >
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="font-medium text-gray-900">
-                                            {enquiry?.name}
-                                        </div>
-                                        <div className="text-gray-500 text-sm">
-                                            {enquiry?.email}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-900">
-                                        {enquiry?.phone}
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-900 font-mono">
-                                        <div>{enquiry?.car?._id || "N/A"}</div>
-                                        <div className="text-xs text-gray-500">
-                                            {enquiry?.car?.modelName || ""}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-500">
-                                        {new Date(
-                                            enquiry?.createdAt
-                                        ).toLocaleDateString()}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <StatusBadge status={enquiry.status} />
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        {enquiry.status.toLowerCase() ===
-                                            "pending" && (
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() =>
-                                                        handleApprove(
-                                                            enquiry._id
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        updateStatusMutation.isPending
-                                                    }
-                                                    className="px-3 py-1 text-green-700 bg-green-50 hover:bg-green-100 rounded-md flex items-center gap-1 text-sm"
-                                                >
-                                                    <CheckCircle2 size={16} />
-                                                    Approve
-                                                </button>
-                                                <button
-                                                    onClick={() =>
-                                                        handleReject(
-                                                            enquiry._id
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        updateStatusMutation.isPending
-                                                    }
-                                                    className="px-3 py-1 text-red-700 bg-red-50 hover:bg-red-100 rounded-md flex items-center gap-1 text-sm"
-                                                >
-                                                    <XCircle size={16} />
-                                                    Reject
-                                                </button>
+                            {enquiries.length > 0 &&
+                                enquiries.map((enquiry) => (
+                                    <tr
+                                        key={enquiry._id}
+                                        className="hover:bg-gray-50 transition-colors"
+                                    >
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="font-medium text-gray-900">
+                                                {enquiry?.name}
                                             </div>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
+                                            <div className="text-gray-500 text-sm">
+                                                {enquiry?.email}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-900">
+                                            {enquiry?.phone}
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-900 font-mono">
+                                            {enquiry?.car?._id || "N/A"}
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-900">
+                                            {enquiry?.price
+                                                ? `₹${enquiry.price.toLocaleString()}`
+                                                : "-"}
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-500">
+                                            {new Date(
+                                                enquiry?.createdAt
+                                            ).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <StatusBadge
+                                                status={enquiry.status}
+                                            />
+                                        </td>
+                                        <td className="px-6 py-4 text-sm font-medium">
+                                            <div className="flex items-center gap-3">
+                                                {enquiry.status.toLowerCase() ===
+                                                    "pending" && (
+                                                    <>
+                                                        <button
+                                                            onClick={() =>
+                                                                handleApprove(
+                                                                    enquiry._id
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                updateStatusMutation.isPending
+                                                            }
+                                                            className="flex items-center gap-1 px-3 py-1 bg-green-50 text-green-700 rounded-md hover:bg-green-100 transition-colors"
+                                                        >
+                                                            <CheckCircle2
+                                                                size={16}
+                                                            />
+                                                            <span>Approve</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() =>
+                                                                handleReject(
+                                                                    enquiry._id
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                updateStatusMutation.isPending
+                                                            }
+                                                            className="flex items-center gap-1 px-3 py-1 bg-red-50 text-red-700 rounded-md hover:bg-red-100 transition-colors"
+                                                        >
+                                                            <XCircle
+                                                                size={16}
+                                                            />
+                                                            <span>Reject</span>
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            {/* Mobile View Cards */}
-            <div className="sm:hidden space-y-4">
+            {/* Mobile Cards */}
+            <div className="md:hidden space-y-4">
                 {enquiries.map((enquiry) => (
                     <div
                         key={enquiry._id}
@@ -250,8 +264,8 @@ export default function EnquiriesPage() {
                             {enquiry?.car?._id || "N/A"}
                         </div>
                         <div className="text-sm text-gray-600">
-                            <strong>Model:</strong>{" "}
-                            {enquiry?.car?.modelName || "—"}
+                            <strong>Price:</strong> ₹
+                            {enquiry?.price?.toLocaleString() || "-"}
                         </div>
                         <div className="text-sm">
                             <strong>Date:</strong>{" "}
@@ -264,15 +278,13 @@ export default function EnquiriesPage() {
                                     onClick={() => handleApprove(enquiry._id)}
                                     className="px-3 py-1 text-green-700 bg-green-50 hover:bg-green-100 rounded-md flex items-center gap-1 text-sm w-full"
                                 >
-                                    <CheckCircle2 size={16} />
-                                    Approve
+                                    <CheckCircle2 size={16} /> Approve
                                 </button>
                                 <button
                                     onClick={() => handleReject(enquiry._id)}
                                     className="px-3 py-1 text-red-700 bg-red-50 hover:bg-red-100 rounded-md flex items-center gap-1 text-sm w-full"
                                 >
-                                    <XCircle size={16} />
-                                    Reject
+                                    <XCircle size={16} /> Reject
                                 </button>
                             </div>
                         )}

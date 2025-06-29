@@ -115,8 +115,8 @@ export default function SellRequestsPage() {
     const totalPages = data?.totalPages || 1;
 
     return (
-        <div className="p-6 bg-gray-50 min-h-screen">
-            <div className="flex justify-between items-center mb-6">
+        <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">
                         Sell Requests
@@ -125,13 +125,13 @@ export default function SellRequestsPage() {
                         Review and manage car sell requests
                     </p>
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50">
+                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 w-full sm:w-auto">
                     <Download size={16} /> Export
                 </button>
             </div>
 
             <div className="bg-white shadow-sm rounded-xl border overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full divide-y divide-gray-200 text-sm">
                     <thead className="bg-gray-50">
                         <tr>
                             {[
@@ -144,7 +144,7 @@ export default function SellRequestsPage() {
                             ].map((col) => (
                                 <th
                                     key={col}
-                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                                    className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
                                 >
                                     {col}
                                 </th>
@@ -168,8 +168,8 @@ export default function SellRequestsPage() {
                         ) : (
                             sellRequests.map((req) => (
                                 <tr key={req._id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-4">
+                                    <td className="px-4 sm:px-6 py-4">
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                             <img
                                                 src={
                                                     req.images?.[0]
@@ -177,34 +177,34 @@ export default function SellRequestsPage() {
                                                         : "/fallback-car.jpg"
                                                 }
                                                 alt={req.modelName}
-                                                className="w-16 h-12 object-cover rounded-md"
+                                                className="w-full sm:w-16 h-32 sm:h-12 object-cover rounded-md"
                                             />
                                             <div>
                                                 <div className="font-medium text-gray-900">
                                                     {req.brand?.name}{" "}
                                                     {req.modelName}
                                                 </div>
-                                                <div className="text-gray-500 text-sm">
+                                                <div className="text-gray-500 text-xs sm:text-sm">
                                                     Year: {req.year}
                                                 </div>
-                                                <div className="text-gray-500 text-sm capitalize">
+                                                <div className="text-gray-500 text-xs sm:text-sm capitalize">
                                                     {req.condition}
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-sm">
-                                        <div className="font-medium text-gray-900">
+                                    <td className="px-4 sm:px-6 py-4">
+                                        <div className="font-medium text-gray-900 text-xs sm:text-sm">
                                             {req.sellerName}
                                         </div>
-                                        <div className="text-gray-500">
+                                        <div className="text-gray-500 text-xs sm:text-sm">
                                             {req.sellerPhone}
                                         </div>
-                                        <div className="text-gray-500">
+                                        <div className="text-gray-500 text-xs sm:text-sm">
                                             {req.sellerEmail}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-sm">
+                                    <td className="px-4 sm:px-6 py-4 text-xs sm:text-sm">
                                         ₹{req.expectedPrice?.toLocaleString()}
                                         <div className="text-gray-500">
                                             {req.mileage?.toLocaleString()} km
@@ -213,14 +213,14 @@ export default function SellRequestsPage() {
                                             {req.fuelType}, {req.transmission}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500">
+                                    <td className="px-4 sm:px-6 py-4 text-xs sm:text-sm text-gray-500">
                                         {formatDate(req.createdAt)}
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="px-4 sm:px-6 py-4">
                                         <StatusBadge status={req.status} />
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex gap-2">
+                                    <td className="px-4 sm:px-6 py-4">
+                                        <div className="flex flex-col sm:flex-row gap-2">
                                             {req.status === "pending" && (
                                                 <>
                                                     <button
@@ -234,7 +234,7 @@ export default function SellRequestsPage() {
                                                             updatingStatusId ===
                                                             req._id
                                                         }
-                                                        className={`px-3 py-1 text-green-700 bg-green-50 hover:bg-green-100 rounded flex items-center gap-1 ${
+                                                        className={`px-3 py-1 text-green-700 bg-green-50 hover:bg-green-100 rounded flex items-center gap-1 justify-center text-xs sm:text-sm ${
                                                             updatingStatusId ===
                                                                 req._id &&
                                                             updatingAction ===
@@ -269,7 +269,7 @@ export default function SellRequestsPage() {
                                                             updatingStatusId ===
                                                             req._id
                                                         }
-                                                        className={`px-3 py-1 text-red-700 bg-red-50 hover:bg-red-100 rounded flex items-center gap-1 ${
+                                                        className={`px-3 py-1 text-red-700 bg-red-50 hover:bg-red-100 rounded flex items-center gap-1 justify-center text-xs sm:text-sm ${
                                                             updatingStatusId ===
                                                                 req._id &&
                                                             updatingAction ===
@@ -304,7 +304,6 @@ export default function SellRequestsPage() {
                 </table>
             </div>
 
-            {/* Pagination */}
             <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200">
                 <div className="text-sm text-gray-500">
                     Showing{" "}
@@ -332,7 +331,7 @@ export default function SellRequestsPage() {
                             <button
                                 key={p}
                                 onClick={() => setPage(p)}
-                                className={`w-10 h-10 rounded-md border ${
+                                className={`w-10 h-10 rounded-md border text-sm ${
                                     p === page
                                         ? "border-blue-500 bg-blue-50 text-blue-600"
                                         : "border-gray-200 bg-white text-gray-700"

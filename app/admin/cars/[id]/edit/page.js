@@ -1,5 +1,4 @@
 /** @format */
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -10,6 +9,16 @@ import { Loader } from "@/components/loader";
 const FUEL_TYPES = ["petrol", "diesel", "electric", "hybrid", "cng"];
 const TRANSMISSIONS = ["Automatic", "Manual"];
 const CONDITIONS = ["new", "used"];
+const BODY_TYPES = [
+    "SEDAN",
+    "SUV",
+    "HATCHBACK",
+    "CONVERTIBLE",
+    "COUPE",
+    "PICKUP",
+    "VAN",
+    "WAGON",
+];
 
 export default function EditCarPage() {
     const router = useRouter();
@@ -21,17 +30,21 @@ export default function EditCarPage() {
         year: "",
         price: "",
         mileage: "",
+        kmRun: "",
+        bodyType: "",
         fuelType: "",
         transmission: "",
         color: "",
         description: "",
         condition: "",
+        city: "",
         isApproved: true,
         isFeatured: false,
         isSold: false,
         images: [],
         addedBy: "",
     });
+
     const [loading, setLoading] = useState(true);
     const [newImages, setNewImages] = useState([]);
 
@@ -119,8 +132,6 @@ export default function EditCarPage() {
 
             const json = await res.json();
 
-            console.log(form);
-
             if (res.ok) {
                 toast.success("✅ Car updated!");
                 router.push("/admin/cars");
@@ -203,6 +214,30 @@ export default function EditCarPage() {
                         />
                     </div>
 
+                    <div className="grid md:grid-cols-3 gap-4">
+                        <Input
+                            name="kmRun"
+                            type="number"
+                            label="Kilometers Run"
+                            value={form.kmRun}
+                            onChange={handleChange}
+                        />
+                        <Select
+                            name="bodyType"
+                            label="Body Type"
+                            value={form.bodyType}
+                            options={BODY_TYPES}
+                            onChange={handleChange}
+                            required
+                        />
+                        <Input
+                            name="city"
+                            label="City"
+                            value={form?.city}
+                            onChange={handleChange}
+                        />
+                    </div>
+
                     <div className="grid md:grid-cols-2 gap-4">
                         <Select
                             name="fuelType"
@@ -263,20 +298,32 @@ export default function EditCarPage() {
                         />
                     </div>
 
-                    {/* Existing Images */}
-                    <div className="space-y-2">
-                        <p className="text-sm text-gray-600">Existing Images</p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {form.images?.map((img, i) => (
-                                <img
-                                    key={i}
-                                    src={`http://localhost:5000/uploads/cars/${img}`}
-                                    alt={`car-${i}`}
-                                    className="h-28 object-cover rounded"
-                                />
-                            ))}
+                    {/* Only show old images if no new ones uploaded */}
+                    {newImages.length === 0 && (
+                        <div className="space-y-2">
+                            <p className="text-sm text-gray-600">
+                                Existing Images
+                            </p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {form.images?.map((img, i) => (
+                                    <img
+                                        key={i}
+                                        src={`https://cardikhao-production.up.railway.app/uploads/cars/${img}`}
+                                        alt={`car-${i}`}
+                                        className="h-28 object-cover rounded"
+                                    />
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
+
+                    {/* Warning if overriding */}
+                    {newImages.length > 0 && (
+                        <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 p-2 rounded text-sm">
+                            ⚠️ Uploading new images will{" "}
+                            <strong>replace</strong> all existing images.
+                        </div>
+                    )}
 
                     {/* Upload New Images */}
                     <div>
