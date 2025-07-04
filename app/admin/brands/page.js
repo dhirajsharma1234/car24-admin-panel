@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";
 import axios from "axios";
 import Image from "next/image";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { Loader } from "@/components/loader";
 import toast from "react-hot-toast";
@@ -174,7 +175,7 @@ export default function BrandListPage() {
                             className="bg-white shadow-sm rounded-lg p-4 flex flex-col items-center text-center"
                         >
                             <Image
-                                src={`https://cardikhao-production.up.railway.app/uploads/brands/${brand.logo}`}
+                                src={`http://localhost:8000/uploads/brands/${brand.logo}`}
                                 alt={brand.name}
                                 width={80}
                                 height={80}
@@ -233,6 +234,20 @@ export default function BrandListPage() {
                                 >
                                     <Trash2 size={14} /> Delete
                                 </button>
+                            </div>
+                            <div className="flex flex-col gap-2 mt-2">
+                                <div className="flex gap-3 justify-center">
+                                    {/* Enable/Disable and Delete buttons */}
+                                    ...
+                                </div>
+
+                                {/* 🚀 Manage Models Button */}
+                                <Link
+                                    href={`/admin/brands/${brand._id}/models`}
+                                    className="text-blue-600 text-sm flex items-center gap-1 hover:underline justify-center"
+                                >
+                                    📋 Manage Models
+                                </Link>
                             </div>
                         </div>
                     ))}

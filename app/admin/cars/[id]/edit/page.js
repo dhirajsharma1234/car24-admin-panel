@@ -24,6 +24,7 @@ export default function EditCarPage() {
     const router = useRouter();
     const { id } = useParams();
     const [brands, setBrands] = useState([]);
+    const [models, setModels] = useState([]);
     const [form, setForm] = useState({
         brand: "",
         modelName: "",
@@ -60,6 +61,23 @@ export default function EditCarPage() {
         }
     };
 
+    const fetchModels = async (brandId) => {
+        if (!brandId) {
+            setModels([]);
+            return;
+        }
+
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/brand/model/${brandId}`
+            );
+            const json = await res.json();
+            setModels(json.data || []);
+        } catch {
+            toast.error("Failed to load models");
+        }
+    };
+
     const fetchUserAndCar = async () => {
         try {
             const token = localStorage.getItem("token");
@@ -78,10 +96,19 @@ export default function EditCarPage() {
 
             if (userJson?.data && carJson?.data) {
                 setForm({
+                    // ...form,
                     ...carJson.data,
                     brand: carJson.data.brand?._id || "",
+                    modelName:
+                        carJson.data.modelName?._id ||
+                        carJson.data.modelName ||
+                        "",
                     addedBy: userJson.data._id,
                 });
+
+                if (carJson.data.brand?._id) {
+                    await fetchModels(carJson.data.brand._id);
+                }
             } else {
                 toast.error("Failed to fetch user or car info");
             }
@@ -98,10 +125,24 @@ export default function EditCarPage() {
         fetchUserAndCar();
     }, [id]);
 
-    const handleChange = (e) => {
+    const handleChange = async (e) => {
         const { name, value, type, checked } = e.target;
         const finalValue = type === "checkbox" ? checked : value;
-        setForm((prev) => ({ ...prev, [name]: finalValue }));
+
+        if (name === "brand") {
+            setForm((prev) => ({
+                ...prev,
+                brand: finalValue,
+                modelName: "", // clear model
+            }));
+            await fetchModels(finalValue); // fetch updated models
+            return;
+        }
+
+        setForm((prev) => ({
+            ...prev,
+            [name]: finalValue,
+        }));
     };
 
     const handleImageUpload = (e) => {
@@ -146,6 +187,10 @@ export default function EditCarPage() {
 
     if (loading) return <Loader />;
 
+    console.log("form.brand", form.brand);
+    console.log("form.modelName", form.modelName);
+    console.log("models", models);
+
     return (
         <div className="min-h-screen bg-gray-100 py-10 px-4 md:px-10">
             <div className="max-w-5xl mx-auto bg-white shadow-md rounded-2xl p-8 md:p-10">
@@ -173,13 +218,18 @@ export default function EditCarPage() {
                                 ))}
                             </select>
                         </div>
-                        <Input
+                        <Select
                             name="modelName"
                             label="Model Name"
                             value={form.modelName}
+                            options={models.map((m) => ({
+                                label: m.name,
+                                value: m._id,
+                            }))}
                             onChange={handleChange}
                             required
                         />
+
                         <Input
                             name="year"
                             type="number"
@@ -398,11 +448,17 @@ function Select({ name, label, value, options, onChange, required = false }) {
                 className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"
             >
                 <option value="">Select</option>
-                {options.map((opt) => (
-                    <option key={opt} value={opt}>
-                        {opt}
-                    </option>
-                ))}
+                {options.map((opt) =>
+                    typeof opt === "string" ? (
+                        <option key={opt} value={opt}>
+                            {opt}
+                        </option>
+                    ) : (
+                        <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                        </option>
+                    )
+                )}
             </select>
         </div>
     );

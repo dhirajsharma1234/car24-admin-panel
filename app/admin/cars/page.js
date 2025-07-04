@@ -161,7 +161,7 @@ export default function CarListPage() {
                                                         <img
                                                             src={
                                                                 car.images?.[0]
-                                                                    ? `https://cardikhao-production.up.railway.app/uploads/cars/${car.images[0]}`
+                                                                    ? `http://localhost:8000/uploads/cars/${car.images[0]}`
                                                                     : "/fallback-car.jpg"
                                                             }
                                                             alt="car"
@@ -169,11 +169,15 @@ export default function CarListPage() {
                                                         />
                                                         <div className="space-y-0.5">
                                                             <p className="font-semibold text-gray-900 text-sm">
-                                                                {
-                                                                    car.brand
-                                                                        ?.name
-                                                                }{" "}
-                                                                {car.modelName}
+                                                                {car.brand
+                                                                    ?.name ||
+                                                                    "(N/A)"}
+                                                                <span className="ml-1 px-1 py-0.5 bg-gray-100 rounded-md border border-gray-200 text-gray-800">
+                                                                    {car
+                                                                        .modelName
+                                                                        ?.name ||
+                                                                        "(N/A)"}
+                                                                </span>
                                                             </p>
                                                             <p className="text-xs text-gray-500">
                                                                 Year: {car.year}
@@ -322,7 +326,8 @@ export default function CarListPage() {
                                     />
                                     <div className="flex-1">
                                         <h2 className="font-semibold text-gray-900">
-                                            {car.brand?.name} {car.modelName}
+                                            {car.brand?.name}{" "}
+                                            {car.modelName?.name}
                                         </h2>
                                         <p className="text-sm text-gray-500">
                                             Year: {car.year} • Color:{" "}

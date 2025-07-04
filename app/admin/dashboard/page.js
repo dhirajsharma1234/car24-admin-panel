@@ -8,7 +8,6 @@ import {
     DollarSign,
     PhoneCall,
     TrendingUp,
-    CheckCircle,
     Tag,
 } from "lucide-react";
 import {

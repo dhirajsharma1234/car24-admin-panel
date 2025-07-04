@@ -25,6 +25,7 @@ export default function AddCarPage() {
     useAuthRedirect(); // 👈 Protect the route
     const router = useRouter();
 
+    const [models, setModels] = useState([]);
     const [brands, setBrands] = useState([]);
     const [form, setForm] = useState({
         brand: "",
@@ -62,6 +63,26 @@ export default function AddCarPage() {
         };
         fetchBrands();
     }, []);
+
+    //fetch Models When Brand Changes
+    useEffect(() => {
+        const fetchModels = async () => {
+            if (!form.brand) return;
+            try {
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL}/brand/model/${form.brand}`
+                );
+                const data = await res.json();
+                setModels(data.data || []);
+            } catch (err) {
+                console.error("Failed to fetch models", err);
+                toast.error("Failed to load models");
+                setModels([]);
+            }
+        };
+
+        fetchModels();
+    }, [form.brand]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -136,13 +157,18 @@ export default function AddCarPage() {
                                     value: b._id,
                                 }))}
                             />
-                            <Input
+                            <Select
                                 name="modelName"
-                                label="Model Name *"
+                                label="Model *"
                                 value={form.modelName}
                                 onChange={handleChange}
                                 required
+                                options={models.map((m) => ({
+                                    label: m.name,
+                                    value: m._id,
+                                }))}
                             />
+
                             <Input
                                 name="year"
                                 label="Year *"
