@@ -175,7 +175,7 @@ export default function BrandListPage() {
                             className="bg-white shadow-sm rounded-lg p-4 flex flex-col items-center text-center"
                         >
                             <Image
-                                src={`http://localhost:8000/uploads/brands/${brand.logo}`}
+                                src={`https://cardikhao-production.up.railway.app/uploads/brands/${brand.logo}`}
                                 alt={brand.name}
                                 width={80}
                                 height={80}
