@@ -40,6 +40,9 @@ export default function EnquiriesPage() {
         keepPreviousData: true,
     });
 
+    console.log("user enquiries data: ");
+    console.log(data);
+
     useEffect(() => {
         refetch();
     }, [currentPage]);
@@ -174,9 +177,15 @@ export default function EnquiriesPage() {
                                         {enquiry?.phone}
                                     </td>
                                     <td className="px-6 py-4 text-gray-900 font-mono">
-                                        <div>{enquiry?.car?._id || "N/A"}</div>
+                                        <div className="text-green-700">
+                                            {enquiry?.car?._id || "N/A"}
+                                        </div>
+                                        <div className="text-red-700">
+                                            {enquiry?.car?.brand?.name || "N/A"}
+                                        </div>
                                         <div className="text-xs text-gray-500">
-                                            {enquiry?.car?.modelName || ""}
+                                            {enquiry?.car?.modelName?.name ||
+                                                ""}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-gray-500">
@@ -247,11 +256,11 @@ export default function EnquiriesPage() {
                         </div>
                         <div className="text-sm break-all">
                             <strong>Car ID:</strong>{" "}
-                            {enquiry?.car?._id || "N/A"}
+                            {enquiry?.car?.brand?.name || "N/A"}
                         </div>
                         <div className="text-sm text-gray-600">
                             <strong>Model:</strong>{" "}
-                            {enquiry?.car?.modelName || "—"}
+                            {enquiry?.car?.modelName?.name || "—"}
                         </div>
                         <div className="text-sm">
                             <strong>Date:</strong>{" "}
