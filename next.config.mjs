@@ -10,7 +10,7 @@ const nextConfig = {
 
     //added manually
     images: {
-        domains: ["82.112.234.206"], // 👈 Allow images from localhost
+        domains: ["82.112.234.206", "localhost"], // 👈 Allow images from localhost
         // domains: ["localhost"],
     },
 };
