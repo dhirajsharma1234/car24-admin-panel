@@ -4,7 +4,6 @@
  */
 
 const nextConfig = {
-    poweredByHeader: false, //add header
     experimental: {
         turbo: false,
     },
