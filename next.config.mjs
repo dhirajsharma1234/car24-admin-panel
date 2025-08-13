@@ -7,6 +7,7 @@ const nextConfig = {
     experimental: {
         turbo: false,
     },
+    poweredByHeader: false,
 
     //added manually
     images: {
