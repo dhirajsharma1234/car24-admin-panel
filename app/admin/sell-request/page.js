@@ -173,7 +173,7 @@ export default function SellRequestsPage() {
                                             <img
                                                 src={
                                                     req.images?.[0]
-                                                        ? `https://cardikhao-production.up.railway.app/uploads/cars/${req.images[0]}`
+                                                        ? `http://82.112.234.206:8000/uploads/cars/${req.images[0]}`
                                                         : "/fallback-car.jpg"
                                                 }
                                                 alt={req.modelName}
