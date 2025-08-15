@@ -175,7 +175,7 @@ export default function BrandListPage() {
                             className="bg-white shadow-sm rounded-lg p-4 flex flex-col items-center text-center"
                         >
                             <Image
-                                src={`http://82.112.234.206:8000/uploads/brands/${brand.logo}`}
+                                src={`http://api.gadikhao.com/uploads/brands/${brand.logo}`}
                                 alt={brand.name}
                                 width={80}
                                 height={80}

@@ -358,7 +358,7 @@ export default function EditCarPage() {
                                 {form.images?.map((img, i) => (
                                     <img
                                         key={i}
-                                        src={`http://82.112.234.206:8000/uploads/cars/${img}`}
+                                        src={`http://api.gadikhao.com/uploads/cars/${img}`}
                                         alt={`car-${i}`}
                                         className="h-28 object-cover rounded"
                                     />

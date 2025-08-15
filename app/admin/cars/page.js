@@ -161,7 +161,7 @@ export default function CarListPage() {
                                                         <img
                                                             src={
                                                                 car.images?.[0]
-                                                                    ? `http://82.112.234.206:8000/uploads/cars/${car.images[0]}`
+                                                                    ? `http://api.gadikhao.com/uploads/cars/${car.images[0]}`
                                                                     : "/fallback-car.jpg"
                                                             }
                                                             alt="car"
@@ -318,7 +318,7 @@ export default function CarListPage() {
                                     <img
                                         src={
                                             car.images?.[0]
-                                                ? `http://82.112.234.206:8000/uploads/cars/${car.images[0]}`
+                                                ? `http://api.gadikhao.com/uploads/cars/${car.images[0]}`
                                                 : "/fallback-car.jpg"
                                         }
                                         alt="car"
