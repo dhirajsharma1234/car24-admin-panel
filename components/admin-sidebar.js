@@ -43,6 +43,11 @@ const menuItems = [
         href: "/admin/sell-request",
         icon: Package,
     },
+    {
+        title: "Scrap Requests",
+        href: "/admin/scrap-request",
+        icon: Package,
+    },
 ];
 
 export default function AdminSidebar() {
