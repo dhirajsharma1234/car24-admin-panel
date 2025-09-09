@@ -11,7 +11,7 @@ const nextConfig = {
 
     //added manually
     images: {
-        domains: ["api.gadidikhao.com", "localhost"], // 👈 Allow images from localhost.
+        domains: ["api.gadidikhao.com", "82.112.234.206", "localhost"], // 👈 Allow images from localhost.
         // domains: ["localhost"],
     },
 };
